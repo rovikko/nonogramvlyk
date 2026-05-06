@@ -1,0 +1,15 @@
+.container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+
+  .canvas-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+  }
+}
