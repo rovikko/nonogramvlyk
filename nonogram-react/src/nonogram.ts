@@ -1,3 +1,5 @@
+import { createGrid } from "./nonogram-utils";
+
 export const enum NonogramTile {
   Crossed = -1,
   Empty = 0,
@@ -16,11 +18,11 @@ export class Nonogram {
   columns: Clues;
 
   constructor(n: Partial<Nonogram>) {
-    this.field = n.field ?? [];
     this.rowSize = n.rowSize ?? 0;
     this.columnSize = n.columnSize ?? 0;
     this.rows = n.rows ?? [];
     this.columns = n.columns ?? [];
+    this.field = n.field ?? createGrid(this.rowSize, this.columnSize);
   }
 
   isNonogramModelValid() {
