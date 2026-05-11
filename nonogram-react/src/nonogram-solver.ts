@@ -119,6 +119,7 @@ function analyzeRow(
   return { possibleRows, weights, solvedTiles };
 }
 
+// TODO: very slow - optimize
 export function solveNonogram(nonogram: Nonogram): {
   solution: Grid;
   animation: Grid[];
@@ -129,7 +130,7 @@ export function solveNonogram(nonogram: Nonogram): {
   const g: Grid = createGrid(nonogram.width, nonogram.height);
 
   let isSolved = false;
-  const fallbackMaxIterations = 50;
+  const fallbackMaxIterations = 10;
   let iterations = 0;
 
   while (!isSolved && iterations < fallbackMaxIterations) {
@@ -150,9 +151,9 @@ export function solveNonogram(nonogram: Nonogram): {
       });
     });
 
-    nonogram.clueColumns.forEach((row, colIdx) => {
+    nonogram.clueColumns.forEach((col, colIdx) => {
       const currentSolvedCol = gridGetColumn(g, colIdx); // with already solved tiles
-      const { solvedTiles } = analyzeRow(row, nonogram.width, currentSolvedCol);
+      const { solvedTiles } = analyzeRow(col, nonogram.height, currentSolvedCol);
       solvedTiles.forEach((tile, tileIdx) => {
         const prevGrid = structuredClone(g);
         if (g[tileIdx][colIdx] === NonogramTile.Empty) {

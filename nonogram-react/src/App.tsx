@@ -1,36 +1,32 @@
 import { P5Canvas } from "@p5-wrapper/react";
 import "./App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Nonogram } from "./nonogram";
 import { NonogramTile } from "./nonogram-tile";
 import { NonogramSketch, type TileInputEvent } from "./nonogram-sketch";
-import {
-  N1Example,
-  N2Example,
-  N3Example,
-  n4example,
-  NikaNonogramExample,
-} from "./nonogram-examples";
 import { AppMode } from "./app-mode";
-import { gridGetColumn, gridGetRow } from "./nonogram-utils";
 import { solveNonogram } from "./nonogram-solver";
+import { W_nonotram } from "./nonogram-examples";
 
 export function App() {
-  // const n: Nonogram = new Nonogram();
-  // n.initGrid(15, 15);
-  // const mode1 = AppMode.Draw;
-
-  const n: Nonogram = new Nonogram(NikaNonogramExample);
-  n.field = solveNonogram(n).solution;
-  const mode1 = AppMode.Solve;
-
-  const [nonogram, setNonogram] = useState<Nonogram>(n);
-  const [mode, setMode] = useState(mode1);
+  const [nonogram, setNonogram] = useState<Nonogram>(new Nonogram());
+  const [mode, setMode] = useState<AppMode>(AppMode.Solve);
   const [brush, setBrush] = useState(NonogramTile.Filled);
+
+  useEffect(() => {
+    // const n: Nonogram = new Nonogram();
+    // n.initGrid(30, 20);
+    // setNonogram(n);
+    // setMode(AppMode.Draw);
+
+    const n: Nonogram = new Nonogram(W_nonotram);
+    // n.field = solveNonogram(n).solution;
+    setNonogram(n);
+    setMode(AppMode.Solve);
+  }, []);
 
   const tileInputHandler = (e: TileInputEvent) => {
     const currentTileBrush = brush;
-    1;
     nonogram.field[e.row][e.col] =
       e.mouseButton === "left" ? currentTileBrush : NonogramTile.Empty;
 
