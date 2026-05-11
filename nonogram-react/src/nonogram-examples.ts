@@ -1,9 +1,9 @@
 import type { Nonogram } from "./nonogram";
 
 export const N1Example: Partial<Nonogram> = {
-  rowSize: 15,
-  columnSize: 15,
-  columns: [
+  width: 15,
+  height: 15,
+  clueColumns: [
     [9],
     [9, 5],
     [5, 2, 6],
@@ -22,7 +22,7 @@ export const N1Example: Partial<Nonogram> = {
     [11, 1],
     [7, 3],
   ],
-  rows: [
+  clueRows: [
     [5],
     [6],
     [4, 1, 4],
@@ -44,8 +44,85 @@ export const N1Example: Partial<Nonogram> = {
 };
 
 export const N2Example: Partial<Nonogram> = {
-  rowSize: 5,
-  columnSize: 5,
-  columns: [[1, 2], [3], [4], [3], [1, 2]],
-  rows: [[1], [5], [3], [5], [1, 1]],
+  width: 5,
+  height: 5,
+  clueColumns: [[1, 2], [3], [4], [3], [1, 2]],
+  clueRows: [[1], [5], [3], [5], [1, 1]],
+};
+
+export const N3Example: Partial<Nonogram> = {
+  width: 15,
+  height: 15,
+  clueRows: [
+    [1, 3, 1, 1, 3],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 3],
+    [1, 1, 1, 1, 1, 1],
+    [3, 3, 1, 3],
+    [1, 1, 4, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1],
+    [1, 4, 4],
+  ],
+  clueColumns: [
+    [8],
+    [1, 2],
+    [1, 5],
+    [2],
+    [8],
+    [1, 1],
+    [15],
+    [1, 1],
+    [4, 1, 1],
+    [11],
+    [4],
+    [10],
+    [5, 1],
+    [1, 1, 1, 1],
+    [1, 1, 11],
+  ],
+};
+
+// BEST NONOGRAM IN THE WORLD, CREATED BY NIKA
+export const NikaNonogramExample: Partial<Nonogram> = {
+  width: 14,
+  height: 14,
+  clueRows: [
+    [4, 5],
+    [5, 1, 1, 4],
+    [5, 4],
+    [5, 1, 4],
+    [2, 1, 1, 1, 1],
+    [2, 2, 1, 1, 2],
+    [1, 1, 1, 1, 1],
+    [1, 1],
+    [3, 2],
+    [4, 2],
+    [5, 2],
+    [5, 2],
+    [5, 2],
+    [6, 3],
+  ],
+  clueColumns: [
+    [6, 4],
+    [5, 5],
+    [4, 6],
+    [14],
+    [4, 1, 6],
+    [1, 1, 1],
+    [1, 1],
+    [2],
+    [1, 1],
+    [1, 1],
+    [4, 1, 1],
+    [14],
+    [4, 6],
+    [5],
+  ],
 };

@@ -1,10 +1,13 @@
 import type { Sketch, SketchProps } from "@p5-wrapper/react";
-import { NonogramTile, type Nonogram } from "./nonogram";
+import { type Nonogram } from "./nonogram";
+import { NonogramTile } from "./nonogram-tile";
+import { AppMode } from "./app-mode";
 
 const RECT_SIZE = 40;
 const TEXT_SIZE = 30;
 
 export type MouseButton = "left" | "right";
+
 export interface TileInputEvent {
   col: number;
   row: number;
@@ -14,6 +17,8 @@ export interface TileInputEvent {
 type MySketchProps = SketchProps & {
   nonogram: Nonogram;
   tileInputHandler: (e: TileInputEvent) => void;
+  mode: AppMode;
+  keyInputHandler: (e: KeyboardEvent) => void;
 };
 
 export const NonogramSketch: Sketch<MySketchProps> = (p5) => {
@@ -30,6 +35,9 @@ export const NonogramSketch: Sketch<MySketchProps> = (p5) => {
   };
 
   const getGridOffset = () => {
+    if (_props.mode === AppMode.Draw) {
+      return { x: 0, y: 0 };
+    }
     const { longestColumn, longestRow } = _props.nonogram.getCluesData();
     return {
       x: longestRow * RECT_SIZE,
@@ -40,8 +48,14 @@ export const NonogramSketch: Sketch<MySketchProps> = (p5) => {
   const getCanvasSize = () => {
     const nonogram: Nonogram = _props.nonogram;
     const { longestColumn, longestRow } = nonogram.getCluesData();
-    const w = (nonogram.rowSize + longestRow || 10) * RECT_SIZE;
-    const h = (nonogram.columnSize + longestColumn || 10) * RECT_SIZE;
+    if (_props.mode === AppMode.Draw) {
+      return {
+        w: nonogram.width * RECT_SIZE,
+        h: nonogram.height * RECT_SIZE,
+      };
+    }
+    const w = (nonogram.width + longestRow || 10) * RECT_SIZE;
+    const h = (nonogram.height + longestColumn || 10) * RECT_SIZE;
     return { w, h };
   };
 
@@ -64,10 +78,10 @@ export const NonogramSketch: Sketch<MySketchProps> = (p5) => {
     p5.translate(PAN.x, PAN.y);
     p5.scale(CAMERA_ZOOM);
     const grid = nonogram.field;
-    for (let rowIdx = 0; rowIdx < grid.length; rowIdx++) {
-      for (let colIdx = 0; colIdx < grid[rowIdx].length; colIdx++) {
+    for (let rowIdx = 0; rowIdx < nonogram.field.length; rowIdx++) {
+      for (let colIdx = 0; colIdx < nonogram.field[0].length; colIdx++) {
         p5.push();
-        if (grid[colIdx][rowIdx] === NonogramTile.Crossed) {
+        if (grid[rowIdx][colIdx] === NonogramTile.Crossed) {
           p5.fill(255);
           p5.rect(colIdx * RECT_SIZE, rowIdx * RECT_SIZE, RECT_SIZE, RECT_SIZE);
           p5.line(
@@ -85,7 +99,7 @@ export const NonogramSketch: Sketch<MySketchProps> = (p5) => {
           p5.pop();
           continue;
         }
-        if (grid[colIdx][rowIdx] === NonogramTile.Filled) {
+        if (grid[rowIdx][colIdx] === NonogramTile.Filled) {
           p5.fill(50);
         } else {
           p5.fill(255);
@@ -97,52 +111,59 @@ export const NonogramSketch: Sketch<MySketchProps> = (p5) => {
 
     // Grid 5x Lines
     p5.strokeWeight(4);
-    const width = _props.nonogram.rowSize;
-    const height = _props.nonogram.columnSize;
+    const width = _props.nonogram.width;
+    const height = _props.nonogram.height;
     for (let i = 5; i < width; i += 5) {
-      p5.line(i * RECT_SIZE, 0, i * RECT_SIZE, width * RECT_SIZE);
+      p5.line(i * RECT_SIZE, 0, i * RECT_SIZE, height * RECT_SIZE);
     }
     for (let i = 5; i < height; i += 5) {
-      p5.line(0, i * RECT_SIZE, height * RECT_SIZE, i * RECT_SIZE);
+      p5.line(0, i * RECT_SIZE, width * RECT_SIZE, i * RECT_SIZE);
     }
     p5.pop();
 
-    // Columns
-    p5.textSize(TEXT_SIZE);
-    p5.push();
-    p5.fill(100);
-    p5.translate(longestRow * RECT_SIZE, 0);
-    nonogram.columns.forEach((col, i) => {
-      col.forEach((clues, j) => {
-        const colOffset = longestColumn - col.length;
-        p5.push();
-        p5.translate(i * RECT_SIZE * CAMERA_ZOOM, (j + colOffset) * RECT_SIZE);
-        p5.rect(0, 0, RECT_SIZE * CAMERA_ZOOM, RECT_SIZE);
-        p5.fill(0);
-        p5.text(clues, TEXT_SIZE / 4, TEXT_SIZE);
-        p5.pop();
+    if (_props.mode === AppMode.Solve) {
+      // Columns
+      p5.textSize(TEXT_SIZE);
+      p5.push();
+      p5.fill(100);
+      p5.translate(longestRow * RECT_SIZE, 0);
+      nonogram.clueColumns.forEach((col, i) => {
+        col.forEach((clues, j) => {
+          const colOffset = longestColumn - col.length;
+          p5.push();
+          p5.translate(
+            i * RECT_SIZE * CAMERA_ZOOM,
+            (j + colOffset) * RECT_SIZE,
+          );
+          p5.rect(0, 0, RECT_SIZE * CAMERA_ZOOM, RECT_SIZE);
+          p5.fill(0);
+          p5.text(clues, TEXT_SIZE / 4, TEXT_SIZE);
+          p5.pop();
+        });
       });
-    });
-    p5.fill(0);
-    p5.pop();
+      p5.fill(0);
+      p5.pop();
 
-    // Rows
-    p5.push();
-    p5.fill(100);
-    p5.translate(0, longestColumn * RECT_SIZE);
-    nonogram.rows.forEach((row, i) => {
-      row.forEach((clues, j) => {
-        const rowOffset = longestRow - row.length;
-        p5.push();
-        p5.translate((j + rowOffset) * RECT_SIZE, i * RECT_SIZE * CAMERA_ZOOM);
-        p5.rect(0, 0, RECT_SIZE, RECT_SIZE * CAMERA_ZOOM);
-        p5.fill(0);
-        p5.text(clues, TEXT_SIZE / 4, TEXT_SIZE);
-        p5.pop();
+      // Rows
+      p5.push();
+      p5.fill(100);
+      p5.translate(0, longestColumn * RECT_SIZE);
+      nonogram.clueRows.forEach((col, i) => {
+        col.forEach((clues, j) => {
+          const rowOffset = longestRow - col.length;
+          p5.push();
+          p5.translate(
+            (j + rowOffset) * RECT_SIZE,
+            i * RECT_SIZE * CAMERA_ZOOM,
+          );
+          p5.rect(0, 0, RECT_SIZE, RECT_SIZE * CAMERA_ZOOM);
+          p5.fill(0);
+          p5.text(clues, TEXT_SIZE / 4, TEXT_SIZE);
+          p5.pop();
+        });
       });
-    });
-    p5.pop();
-
+      p5.pop();
+    }
   };
 
   p5.draw = () => {
@@ -156,7 +177,7 @@ export const NonogramSketch: Sketch<MySketchProps> = (p5) => {
       return;
     }
 
-    // TODO: finish pan zoomn feature 
+    // TODO: finish pan zoomn feature
     // if (e.buttons === 4) {
     //   PAN.x += e.movementX;
     //   PAN.y += e.movementY;
@@ -166,26 +187,34 @@ export const NonogramSketch: Sketch<MySketchProps> = (p5) => {
     // Inside Grid
     const mouseX = p5.mouseX - gridOffsetX;
     const mouseY = p5.mouseY - gridOffsetY;
-    const i = Math.floor((mouseX - PAN.x) / (RECT_SIZE * CAMERA_ZOOM));
-    const j = Math.floor((mouseY - PAN.y) / (RECT_SIZE * CAMERA_ZOOM));
+    const colIdx = Math.floor((mouseX - PAN.x) / (RECT_SIZE * CAMERA_ZOOM));
+    const rowIdx = Math.floor((mouseY - PAN.y) / (RECT_SIZE * CAMERA_ZOOM));
 
     const mouseButton: MouseButton = e.buttons === 2 ? "right" : "left";
     console.log(e.buttons);
 
     const grid = _props.nonogram.field;
-    if (i >= 0 && i < grid.length && j >= 0 && j < grid[i].length) {
-      _props.tileInputHandler({ col: i, row: j, mouseButton });
+    if (
+      rowIdx >= 0 &&
+      rowIdx < grid.length &&
+      colIdx >= 0 &&
+      colIdx < grid[rowIdx].length
+    ) {
+      _props.tileInputHandler({ col: colIdx, row: rowIdx, mouseButton });
     }
   };
 
   p5.mouseDragged = mouseHandler;
   p5.mousePressed = mouseHandler;
   p5.mouseWheel = (e: WheelEvent) => {
-    // TODO: finish pan zoomn feature 
+    // TODO: finish pan zoomn feature
     // const diff = -Math.sign(e.deltaY) / 10;
     // CAMERA_ZOOM = CAMERA_ZOOM + diff;
     // if (CAMERA_ZOOM < CAMERA_ZOOM_MIN) {
     //   CAMERA_ZOOM = CAMERA_ZOOM_MIN;
     // }
+  };
+  p5.keyPressed = (e: KeyboardEvent) => {
+    _props.keyInputHandler(e);
   };
 };

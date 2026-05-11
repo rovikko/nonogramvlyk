@@ -1,5 +1,6 @@
 import { combinations } from "combinatorial-generators";
-import { type Nonogram, type Grid, NonogramTile } from "./nonogram";
+import { type Nonogram, type Grid } from "./nonogram";
+import { NonogramTile } from "./nonogram-tile";
 import {
   createGrid,
   gridGetRow,
@@ -39,7 +40,7 @@ function analyzeRow(
 
   // converting sequences like [0, 1, 2] to grid rows like 111011011111100
   const sequenceToGridRow = (sequence: number[]) => {
-    const gridRow = new Array(rowSize).fill(0);
+    const gridRow = new Array(rowSize).fill(NonogramTile.Empty);
     sequence = sequence.map((v, i) => {
       if (i == 0) {
         return v;
@@ -50,7 +51,7 @@ function analyzeRow(
     sequence.forEach((groupStartIdx, i) => {
       const groupSize = clues[i];
       for (let j = 0; j < groupSize; j++) {
-        gridRow[groupStartIdx + j] = 1;
+        gridRow[groupStartIdx + j] = NonogramTile.Filled;
       }
     });
     return gridRow;
@@ -67,12 +68,18 @@ function analyzeRow(
     // after getting all possible combinations we filter out only those that match with solved tiles
     possibleRows = possibleRows.filter((possibleRow) => {
       for (let i = 0; i < currentGridRow.length; i++) {
-        const simpleVal = currentGridRow[i];
+        const solvedTile = currentGridRow[i];
         const possibleVal = possibleRow[i];
-        if (simpleVal === 1 && possibleVal != 1) {
+        if (
+          solvedTile === NonogramTile.Filled &&
+          possibleVal != NonogramTile.Filled
+        ) {
           return false;
         }
-        if (simpleVal === -1 && possibleVal == 1) {
+        if (
+          solvedTile === NonogramTile.Crossed &&
+          possibleVal == NonogramTile.Filled
+        ) {
           return false;
         }
       }
@@ -87,7 +94,12 @@ function analyzeRow(
   // then we count weights for each tile - how many times it is filled in possible combinations
   const weights: number[] = new Array(rowSize)
     .fill(0)
-    .map((_, i) => possibleRows.reduce((acc, curr) => acc + (curr[i] || 0), 0));
+    .map((_, i) =>
+      possibleRows.reduce(
+        (acc, curr) => acc + (curr[i] === NonogramTile.Filled ? 1 : 0),
+        0,
+      ),
+    );
 
   const solvedTiles: NonogramTile[] = weights.map((w) => {
     // if weight === possibleRowsCount - it means tile is filled 100%
@@ -110,28 +122,27 @@ function analyzeRow(
 export function solveNonogram(nonogram: Nonogram): {
   solution: Grid;
   animation: Grid[];
+  isSolved: boolean;
 } {
   const animation: Grid[] = [];
 
-  const g: Grid = createGrid(nonogram.rowSize, nonogram.columnSize);
+  const g: Grid = createGrid(nonogram.width, nonogram.height);
 
   let isSolved = false;
-  const fallbackMaxIterations = 1000;
+  const fallbackMaxIterations = 50;
   let iterations = 0;
 
   while (!isSolved && iterations < fallbackMaxIterations) {
-    console.log("solving");
+    // console.log("solving");
 
-    nonogram.rows.forEach((row, rowIdx) => {
+    nonogram.clueRows.forEach((row, rowIdx) => {
       const currentSolvedRow = gridGetRow(g, rowIdx); // with already solved tiles
-      const { solvedTiles } = analyzeRow(
-        row,
-        nonogram.rowSize,
-        currentSolvedRow,
-      );
+      const { solvedTiles } = analyzeRow(row, nonogram.width, currentSolvedRow);
       solvedTiles.forEach((tile, tileIdx) => {
         const prevGrid = structuredClone(g);
-        g[tileIdx][rowIdx] ||= tile;
+        if (g[rowIdx][tileIdx] === NonogramTile.Empty) {
+          g[rowIdx][tileIdx] = tile;
+        }
         const newGrid = structuredClone(g);
         if (!gridsEqual(prevGrid, newGrid)) {
           animation.push(structuredClone(g));
@@ -139,16 +150,14 @@ export function solveNonogram(nonogram: Nonogram): {
       });
     });
 
-    nonogram.columns.forEach((row, colIdx) => {
+    nonogram.clueColumns.forEach((row, colIdx) => {
       const currentSolvedCol = gridGetColumn(g, colIdx); // with already solved tiles
-      const { solvedTiles } = analyzeRow(
-        row,
-        nonogram.rowSize,
-        currentSolvedCol,
-      );
+      const { solvedTiles } = analyzeRow(row, nonogram.width, currentSolvedCol);
       solvedTiles.forEach((tile, tileIdx) => {
         const prevGrid = structuredClone(g);
-        g[colIdx][tileIdx] ||= tile;
+        if (g[tileIdx][colIdx] === NonogramTile.Empty) {
+          g[tileIdx][colIdx] = tile;
+        }
         const newGrid = structuredClone(g);
         if (!gridsEqual(prevGrid, newGrid)) {
           animation.push(structuredClone(g));
@@ -160,5 +169,7 @@ export function solveNonogram(nonogram: Nonogram): {
     isSolved = gridIsSolved(g);
   }
 
-  return { solution: g, animation };
+  console.log("SOLVED = ", isSolved, "iterations = ", iterations);
+
+  return { solution: g, animation, isSolved };
 }
