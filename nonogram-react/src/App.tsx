@@ -15,7 +15,7 @@ export function App() {
 
   useEffect(() => {
     // const n: Nonogram = new Nonogram();
-    // n.initGrid(30, 20);
+    // n.initGrid(15, 15);
     // setNonogram(n);
     // setMode(AppMode.Draw);
 
