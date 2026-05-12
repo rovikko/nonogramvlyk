@@ -12,7 +12,7 @@ export type MouseButton = "left" | "right";
 export interface TileInputEvent {
   col: number;
   row: number;
-  mouseButton: MouseButton;
+  mouseButton: MouseButton; 
 }
 
 type MySketchProps = SketchProps & {
@@ -21,6 +21,7 @@ type MySketchProps = SketchProps & {
   mode: AppMode;
   keyInputHandler: (e: KeyboardEvent) => void;
 };
+
 
 export const NonogramSketch: Sketch<MySketchProps> = (p5) => {
   let _props: MySketchProps;

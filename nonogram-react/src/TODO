@@ -1,0 +1,7 @@
+
+1. Optimize rendering to increase fps, performance - look https://onlinenonograms.com/en/id/110540 
+2. Add zoom and pan to canvas
+3. Ability to cross clues
+4. Functionality to check if row is invalid and highlight it for user after user input
+5. Feature to draw straight lines and rects
+6.  
