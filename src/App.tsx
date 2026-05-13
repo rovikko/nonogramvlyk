@@ -1,10 +1,10 @@
 import "./App.css";
-import { NonogramAppV1 } from "./nonogram-app-v1";
+ import { NonogramAppV2 } from "./nonogram-app-v2";
 
 export function App() {
   return (
     <>
-      <NonogramAppV1></NonogramAppV1>
+      <NonogramAppV2></NonogramAppV2>
     </>
   );
 }
